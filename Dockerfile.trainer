@@ -1,0 +1,26 @@
+# Dockerfile.trainer
+FROM python:3.10-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    gcc \
+    cron \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY src/ ./src/
+COPY data/ ./data/
+COPY scheduler.py .
+COPY register_model.py .
+
+# Set PYTHONPATH
+ENV PYTHONPATH=/app
+
+# Install training cron job
+COPY training-cron /etc/cron.d/training-cron
+RUN chmod 0644 /etc/cron.d/training-cron && crontab /etc/cron.d/training-cron
+
+CMD ["cron", "-f"]

@@ -1,0 +1,2 @@
+# training-cron
+0 2 * * * cd /app && python src/train.py >> /var/log/cron.log 2>&1

@@ -1,0 +1,125 @@
+services:
+  # PostgreSQL - Database for MLflow (replaces file store)
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: mlflow
+      POSTGRES_PASSWORD: mlflow123
+      POSTGRES_DB: mlflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mlops-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mlflow -d mlflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MLflow Tracking Server (now using PostgreSQL)
+  mlflow-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_TRACKING_URI=postgresql://mlflow:mlflow123@postgres:5432/mlflow
+      - MLFLOW_HOST=0.0.0.0
+      - MLFLOW__UI__SECURITY__ALLOWED_HOSTS=*  
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./artifacts:/app/artifacts
+    networks:
+      - mlops-network
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --allowed-hosts "*"
+      --backend-store-uri postgresql://mlflow:mlflow123@postgres:5432/mlflow
+      --default-artifact-root /app/artifacts
+      --serve-artifacts
+
+  # Model Training Service (runs on schedule)
+  model-trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile.trainer
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+      - TRAINING_SCHEDULE=0 2 * * *  # Run at 2 AM daily
+    depends_on:
+      - mlflow-server
+      - postgres
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+      - ./mlruns:/app/mlruns
+    networks:
+      - mlops-network
+
+  # Drift Monitoring Service
+  drift-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitor
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+      - CHECK_INTERVAL=3600  # Check every hour
+    depends_on:
+      - mlflow-server
+      - postgres
+    volumes:
+      - ./data:/app/data
+      - ./mlruns:/app/mlruns
+    networks:
+      - mlops-network
+
+  # Main API Service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+      - MODEL_NAME=churn-prediction
+      - MODEL_STAGE=production
+    depends_on:
+      mlflow-server:
+        condition: service_started
+    volumes:
+      - ./data:/app/data
+      - ./src:/app/src
+      - ./artifacts:/app/artifacts
+      - ./mlruns:/app/mlruns
+    networks:
+      - mlops-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx (Load Balancer - optional)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - api
+    networks:
+      - mlops-network
+
+networks:
+  mlops-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

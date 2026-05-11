@@ -1,0 +1,15 @@
+# .dockerignore - Put this in your churn-mlops folder
+__pycache__
+*.pyc
+.git
+.gitignore
+data/raw/*.csv
+models/*.pkl
+mlruns/
+*.db
+.env
+venv/
+.venv/
+.vscode/
+.idea/
+.pytest_cache/

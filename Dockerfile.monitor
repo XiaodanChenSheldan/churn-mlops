@@ -1,0 +1,17 @@
+# Dockerfile.monitor
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# COPY src/monitor_drift.py .
+COPY src ./src
+COPY scheduler.py .
+
+
+# Set PYTHONPATH
+ENV PYTHONPATH=/app
+
+CMD ["python", "scheduler.py"]
