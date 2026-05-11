@@ -72,16 +72,16 @@ jobs:
       - name: Check model accuracy
         run: |
           python -c "
-import mlflow
-from mlflow.tracking import MlflowClient
-client = MlflowClient()
-# Get latest run
-runs = mlflow.search_runs(experiment_ids=['1'])
-if len(runs) > 0:
-    accuracy = runs.iloc[0]['metrics.accuracy']
-    assert accuracy > 0.75, f'Accuracy {accuracy} < 0.75'
-    print(f'✅ Model validated: accuracy={accuracy}')
-"
+              import mlflow
+              from mlflow.tracking import MlflowClient
+              client = MlflowClient()
+              # Get latest run
+              runs = mlflow.search_runs(experiment_ids=['1'])
+              if len(runs) > 0:
+              accuracy = runs.iloc[0]['metrics.accuracy']
+              assert accuracy > 0.75, f'Accuracy {accuracy} < 0.75'
+              print(f'✅ Model validated: accuracy={accuracy}')
+          "
 
   # JOB 3: Build Docker image
   build-docker:
