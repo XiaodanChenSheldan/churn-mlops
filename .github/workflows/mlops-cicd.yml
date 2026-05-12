@@ -9,11 +9,12 @@ on:
 env:
   PYTHON_VERSION: '3.10'
   DOCKER_IMAGE: churn-prediction-api
+  CI: "true"
 
 jobs:
   # JOB 1: Test the code
   test:
-    name: 🧪 Test & Lint
+    name: Test & Lint
     runs-on: ubuntu-latest
     
     steps:
@@ -28,7 +29,19 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install pytest pytest-cov flake8 black
+          pip install pytest pytest-cov flake8 black isort
+
+      - name: Auto-format code
+        run: |
+          black src/ api.py
+          isort src/
+
+      - name: Commit formatted code (optional)
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add .
+          git diff --staged --quiet || git commit -m "Auto-format code via CI"
       
       - name: Lint code (check style)
         run: |
@@ -47,7 +60,7 @@ jobs:
 
   # JOB 2: Train & validate model
   train-and-validate:
-    name: 🤖 Train & Validate Model
+    name: Train & Validate Model
     needs: test
     runs-on: ubuntu-latest
     
@@ -67,6 +80,7 @@ jobs:
       
       - name: Train model
         run: |
+          mkdir -p /tmp/mlruns  # Create the directory
           python src/train.py
       
       - name: Check model accuracy
@@ -80,12 +94,12 @@ jobs:
               if len(runs) > 0:
               accuracy = runs.iloc[0]['metrics.accuracy']
               assert accuracy > 0.75, f'Accuracy {accuracy} < 0.75'
-              print(f'✅ Model validated: accuracy={accuracy}')
+              print(f'Model validated: accuracy={accuracy}')
           "
 
   # JOB 3: Build Docker image
   build-docker:
-    name: 🐳 Build Docker Image
+    name: Build Docker Image
     needs: train-and-validate
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
@@ -117,7 +131,7 @@ jobs:
 
   # JOB 4: Deploy to production (optional)
   deploy:
-    name: 🚀 Deploy to Production
+    name: Deploy to Production
     needs: build-docker
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'

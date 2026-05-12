@@ -1,6 +1,5 @@
 # src/preprocess.py
 import pandas as pd
-import numpy as np
 from sklearn.preprocessing import LabelEncoder
 
 def load_and_preprocess(data_path="data/raw/churn.csv"):
@@ -44,3 +43,4 @@ if __name__ == "__main__":
     X, y, _ = load_and_preprocess()
     print("Preprocessing complete!")
     print(f"Features: {list(X.columns)[:5]}...")
+    

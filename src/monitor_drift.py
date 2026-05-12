@@ -1,8 +1,7 @@
 # src/monitor_drift.py
-import pandas as pd
 import mlflow
 from evidently.report import Report
-from evidently.metric_preset import DataDriftPreset, TargetDriftPreset
+from evidently.metric_preset import DataDriftPreset
 from src.preprocess import load_and_preprocess
 import json
 from datetime import datetime
@@ -42,7 +41,7 @@ def calculate_drift():
     drift_detected = result['metrics'][1]['result']['drift_by_columns']
     num_drifted = sum(1 for col in drift_detected.values() if col['drift_detected'])
     
-    print(f"📊 Drift Analysis Results:")
+    print("Drift Analysis Results:")
     print(f"   Total features: {len(drift_detected)}")
     print(f"   Features with drift: {num_drifted}")
     
@@ -68,3 +67,4 @@ def calculate_drift():
 
 if __name__ == "__main__":
     calculate_drift()
+    
