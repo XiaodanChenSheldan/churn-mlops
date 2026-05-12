@@ -109,7 +109,7 @@ with mlflow.start_run(run_name=RUN_NAME) as run:
             name=MODEL_NAME, version=registered_model.version, stage="Production"
         )
 
-        print(f"Model registered as '{MODEL_NAME}' version {registered_model.version}")
+        print(f"Model: '{MODEL_NAME}' version {registered_model.version}")
         print("Stage: Production")
 
     except Exception as e:
