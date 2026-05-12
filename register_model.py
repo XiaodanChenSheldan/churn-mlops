@@ -12,7 +12,7 @@ if experiment:
     if len(runs) > 0:
         best_run_id = runs.iloc[0].run_id
         print(f"Registering model from run: {best_run_id}")
-        
+
         model_uri = f"runs:/{best_run_id}/model"
         mlflow.register_model(model_uri, "churn-prediction")
         print("Model registered as 'churn-prediction'")

@@ -1,10 +1,12 @@
 # src/monitor_drift.py
-import mlflow
-from evidently.report import Report
-from evidently.metric_preset import DataDriftPreset
-from src.preprocess import load_and_preprocess
 import json
 from datetime import datetime
+
+import mlflow
+from evidently.metric_preset import DataDriftPreset
+from evidently.report import Report
+
+from src.preprocess import load_and_preprocess
 
 
 def load_production_data():

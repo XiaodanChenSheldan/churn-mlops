@@ -1,14 +1,16 @@
 # src/train.py - Complete version with registration
-import warnings
 import os
+import warnings
 
 import mlflow
 import mlflow.sklearn
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from preprocess import load_and_preprocess
 from mlflow.tracking import MlflowClient
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (accuracy_score, f1_score, precision_score,
+                             recall_score)
+from sklearn.model_selection import train_test_split
+
+from preprocess import load_and_preprocess
 
 warnings.filterwarnings("ignore")
 

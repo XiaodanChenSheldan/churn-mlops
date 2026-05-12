@@ -1,6 +1,7 @@
 # download_data.py
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
 
 # Create data directory
 Path("data/raw").mkdir(parents=True, exist_ok=True)
